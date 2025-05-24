@@ -1,0 +1,11 @@
+<resources>
+        <string name="app_name">Dad Joke App</string>
+        <string name="fetch_joke">New Joke</string>
+        <string name="view_saved">Saved Jokes</string>
+        <string name="like_joke">Like</string>
+        <string name="joke_setup">Joke Setup</string>
+        <string name="joke_punchline">Joke Punchline</string>
+        <string name="no_saved_jokes">No favorite jokes yet! Tap Like to save some laughs.</string>
+        <string name="favorites_title">Favorites</string>
+        <string name="joke_fetcher_title">Joke Fetcher</string>
+</resources>

@@ -1,14 +1,14 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_activated="true">
+    <item android:state_pressed="true">
         <shape android:shape="oval">
-            <size android:width="60dp" android:height="60dp"/>
-            <solid android:color="#202124"/> <!-- Dark background when activated -->
+            <size android:width="40dp" android:height="40dp"/> <!-- Updated size -->
+            <solid android:color="#202124"/> <!-- Dark background when pressed -->
         </shape>
     </item>
     <item>
         <shape android:shape="oval">
-            <size android:width="60dp" android:height="60dp"/>
-            <solid android:color="#CDBFF7"/> <!-- Light purple background when not activated -->
+            <size android:width="40dp" android:height="40dp"/> <!-- Updated size -->
+            <solid android:color="#CDBFF7"/> <!-- Light purple background when not pressed -->
         </shape>
     </item>
 </selector>

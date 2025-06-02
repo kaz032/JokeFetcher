@@ -31,13 +31,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private MaterialButton fetchJokeButton;
     private MaterialButton likeButton;
     private MaterialButton viewSavedButton;
-    private ImageView volumeIcon; // New ImageView for TTS
+    private ImageView volumeIcon;
     private OkHttpClient client;
     private String currentJokeSetup;
     private String currentJokePunchline;
     private boolean isShowingPunchline = false;
     private TextToSpeech textToSpeech;
-    private boolean isSpeaking = false; // Track speaking state for toggle
+    private boolean isSpeaking = false; // Track if audio is playing
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         fetchJokeButton = findViewById(R.id.fetchJokeButton);
         likeButton = findViewById(R.id.likeButton);
         viewSavedButton = findViewById(R.id.viewSavedButton);
-        volumeIcon = findViewById(R.id.volumeIcon); // New ImageView
+        volumeIcon = findViewById(R.id.volumeIcon);
         client = new OkHttpClient();
 
         // Initialize TextToSpeech
@@ -65,7 +65,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             startActivity(intent);
         });
 
-        volumeIcon.setOnClickListener(v -> toggleSpeakJoke()); // Toggle TTS on icon click
+        // Set OnClickListener for toggle behavior
+        volumeIcon.setOnClickListener(v -> toggleSpeakJoke());
 
         jokeCard.setOnClickListener(v -> {
             if (currentJokePunchline != null && !currentJokePunchline.isEmpty()) {
@@ -124,10 +125,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             jokeText.setText(currentJokeSetup);
                             jokeText.setAlpha(1f);
                             isShowingPunchline = false;
-                            // Reset speaking state and icon
+                            // Stop any ongoing speech when fetching a new joke
                             stopSpeaking();
-                            volumeIcon.setActivated(false);
-                            isSpeaking = false;
                         });
                     } catch (Exception e) {
                         runOnUiThread(() -> jokeText.setText("Error parsing joke!"));
@@ -157,19 +156,16 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     private void toggleSpeakJoke() {
-        if (isSpeaking) {
-            stopSpeaking();
-            volumeIcon.setActivated(false);
-            isSpeaking = false;
-        } else {
-            String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
-            if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
+        String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
+        if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
+            if (textToSpeech.isSpeaking()) {
+                textToSpeech.stop(); // Stop immediately if already speaking
+            } else {
                 textToSpeech.speak(jokeToSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
-                volumeIcon.setActivated(true);
-                isSpeaking = true;
             }
         }
     }
+
 
     private void stopSpeaking() {
         if (textToSpeech != null && textToSpeech.isSpeaking()) {

@@ -50,13 +50,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp">
 
-        <ImageView
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_empty_jokes"
-            android:tint="@color/text_secondary" />
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/emptyJokeAnimation"
+            android:layout_width="128dp"
+            android:layout_height="128dp" />
 
         <TextView
+            android:id="@+id/emptyJokeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/no_saved_jokes"
@@ -64,6 +64,15 @@
             android:textColor="@color/text_secondary"
             android:layout_marginTop="16dp"
             android:fontFamily="sans-serif" />
+
+        <Button
+            android:id="@+id/seeRandomJokeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="See Random Joke"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 

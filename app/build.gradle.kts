@@ -54,6 +54,12 @@ dependencies {
     // CardView for flashcard UI
     implementation(libs.cardview)
 
+    // Lottie for animations
+    implementation(libs.lottie)
+
+    // WorkManager for notifications
+    implementation(libs.work.runtime)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,13 +14,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.util.Locale;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
     private static final String PREFS_NAME = "DadJokePrefs";
     private static final String KEY_SAVED_JOKES = "saved_jokes";
@@ -28,10 +30,12 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButton fetchJokeButton;
     private MaterialButton likeButton;
     private MaterialButton viewSavedButton;
+    private MaterialButton ttsButton; // New button for TTS
     private OkHttpClient client;
     private String currentJokeSetup;
     private String currentJokePunchline;
     private boolean isShowingPunchline = false;
+    private TextToSpeech textToSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +48,11 @@ public class MainActivity extends AppCompatActivity {
         fetchJokeButton = findViewById(R.id.fetchJokeButton);
         likeButton = findViewById(R.id.likeButton);
         viewSavedButton = findViewById(R.id.viewSavedButton);
+        ttsButton = findViewById(R.id.ttsButton); // Assuming you add this button in the layout
         client = new OkHttpClient();
+
+        // Initialize TextToSpeech
+        textToSpeech = new TextToSpeech(this, this);
 
         fetchJokeButton.setOnClickListener(v -> fetchJoke());
 
@@ -54,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SavedJokesActivity.class);
             startActivity(intent);
         });
+
+        ttsButton.setOnClickListener(v -> speakJoke()); // Trigger TTS on button click
 
         jokeCard.setOnClickListener(v -> {
             if (currentJokePunchline != null && !currentJokePunchline.isEmpty()) {
@@ -67,6 +77,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         fetchJoke();
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = textToSpeech.setLanguage(Locale.US); // Set language to US English
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                ttsButton.setEnabled(false); // Disable TTS if language not supported
+            }
+        } else {
+            ttsButton.setEnabled(false); // Disable TTS if initialization fails
+        }
     }
 
     private void fetchJoke() {
@@ -128,6 +150,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void speakJoke() {
+        String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
+        if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
+            textToSpeech.speak(jokeToSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
+
     private JSONArray getSavedJokes(SharedPreferences prefs) {
         String savedJokesString = prefs.getString(KEY_SAVED_JOKES, "[]");
         try {
@@ -135,5 +164,14 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             return new JSONArray();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
     }
 }

@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import com.google.android.material.button.MaterialButton;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private String currentJokePunchline;
     private boolean isShowingPunchline = false;
     private TextToSpeech textToSpeech;
-    private boolean isSpeaking = false; // Track if audio is playing
+    private boolean isSpeaking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +56,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         volumeIcon = findViewById(R.id.volumeIcon);
         client = new OkHttpClient();
 
-        // Initialize TextToSpeech
-        textToSpeech = new TextToSpeech(this, this);
+        // Initialize TextToSpeech with Google TTS engine
+        textToSpeech = new TextToSpeech(this, this, "com.google.android.tts");
 
         fetchJokeButton.setOnClickListener(v -> fetchJoke());
 
@@ -65,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             startActivity(intent);
         });
 
-        // Set OnClickListener for toggle behavior
         volumeIcon.setOnClickListener(v -> toggleSpeakJoke());
 
         jokeCard.setOnClickListener(v -> {
@@ -87,10 +89,43 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         if (status == TextToSpeech.SUCCESS) {
             int result = textToSpeech.setLanguage(Locale.US);
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "US English language is not supported");
                 volumeIcon.setEnabled(false);
+                Toast.makeText(MainActivity.this, "Please install US English voice data in TTS settings.", Toast.LENGTH_LONG).show();
+                Intent installIntent = new Intent();
+                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
+                return;
             }
+
+            Log.d("TTS", "Available voices:");
+            Voice selectedVoice = null;
+            for (Voice voice : textToSpeech.getVoices()) {
+                Log.d("TTS", "Voice: " + voice.getName() + ", Locale: " + voice.getLocale() + ", Quality: " + voice.getQuality());
+                if (voice.getLocale().equals(Locale.US)) {
+                    String voiceName = voice.getName().toLowerCase();
+                    if (voiceName.contains("male") || voiceName.contains("en-us-x-sfg#male") || voiceName.contains("en-us-voice-a")) {
+                        selectedVoice = voice;
+                        break;
+                    }
+                }
+            }
+
+            if (selectedVoice != null) {
+                textToSpeech.setVoice(selectedVoice);
+                Log.d("TTS", "Selected voice: " + selectedVoice.getName());
+            } else {
+                Log.w("TTS", "No male voice found, using default US English voice");
+                Toast.makeText(MainActivity.this, "No male voice found. Using default voice.", Toast.LENGTH_SHORT).show();
+            }
+
+            textToSpeech.setPitch(0.5f);
+            textToSpeech.setSpeechRate(0.8f);
+            volumeIcon.setEnabled(true);
         } else {
+            Log.e("TTS", "TextToSpeech initialization failed with status: " + status);
             volumeIcon.setEnabled(false);
+            Toast.makeText(MainActivity.this, "Text-to-Speech initialization failed.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -125,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             jokeText.setText(currentJokeSetup);
                             jokeText.setAlpha(1f);
                             isShowingPunchline = false;
-                            // Stop any ongoing speech when fetching a new joke
                             stopSpeaking();
                         });
                     } catch (Exception e) {
@@ -159,13 +193,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
         if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
             if (textToSpeech.isSpeaking()) {
-                textToSpeech.stop(); // Stop immediately if already speaking
+                textToSpeech.stop();
             } else {
                 textToSpeech.speak(jokeToSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
             }
         }
     }
-
 
     private void stopSpeaking() {
         if (textToSpeech != null && textToSpeech.isSpeaking()) {

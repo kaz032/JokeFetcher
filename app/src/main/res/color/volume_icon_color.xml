@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true" android:color="#FFFFFF"/> <!-- White when activated -->
+    <item android:color="#202124"/> <!-- Dark color when not activated -->
+</selector>

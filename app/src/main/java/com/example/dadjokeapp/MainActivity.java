@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -30,12 +31,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private MaterialButton fetchJokeButton;
     private MaterialButton likeButton;
     private MaterialButton viewSavedButton;
-    private MaterialButton ttsButton; // New button for TTS
+    private ImageView volumeIcon; // New ImageView for TTS
     private OkHttpClient client;
     private String currentJokeSetup;
     private String currentJokePunchline;
     private boolean isShowingPunchline = false;
     private TextToSpeech textToSpeech;
+    private boolean isSpeaking = false; // Track speaking state for toggle
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         fetchJokeButton = findViewById(R.id.fetchJokeButton);
         likeButton = findViewById(R.id.likeButton);
         viewSavedButton = findViewById(R.id.viewSavedButton);
-        ttsButton = findViewById(R.id.ttsButton); // Assuming you add this button in the layout
+        volumeIcon = findViewById(R.id.volumeIcon); // New ImageView
         client = new OkHttpClient();
 
         // Initialize TextToSpeech
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             startActivity(intent);
         });
 
-        ttsButton.setOnClickListener(v -> speakJoke()); // Trigger TTS on button click
+        volumeIcon.setOnClickListener(v -> toggleSpeakJoke()); // Toggle TTS on icon click
 
         jokeCard.setOnClickListener(v -> {
             if (currentJokePunchline != null && !currentJokePunchline.isEmpty()) {
@@ -82,12 +84,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            int result = textToSpeech.setLanguage(Locale.US); // Set language to US English
+            int result = textToSpeech.setLanguage(Locale.US);
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                ttsButton.setEnabled(false); // Disable TTS if language not supported
+                volumeIcon.setEnabled(false);
             }
         } else {
-            ttsButton.setEnabled(false); // Disable TTS if initialization fails
+            volumeIcon.setEnabled(false);
         }
     }
 
@@ -122,6 +124,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             jokeText.setText(currentJokeSetup);
                             jokeText.setAlpha(1f);
                             isShowingPunchline = false;
+                            // Reset speaking state and icon
+                            stopSpeaking();
+                            volumeIcon.setActivated(false);
+                            isSpeaking = false;
                         });
                     } catch (Exception e) {
                         runOnUiThread(() -> jokeText.setText("Error parsing joke!"));
@@ -150,10 +156,24 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
     }
 
-    private void speakJoke() {
-        String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
-        if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
-            textToSpeech.speak(jokeToSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
+    private void toggleSpeakJoke() {
+        if (isSpeaking) {
+            stopSpeaking();
+            volumeIcon.setActivated(false);
+            isSpeaking = false;
+        } else {
+            String jokeToSpeak = isShowingPunchline ? currentJokePunchline : currentJokeSetup;
+            if (jokeToSpeak != null && !jokeToSpeak.isEmpty()) {
+                textToSpeech.speak(jokeToSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
+                volumeIcon.setActivated(true);
+                isSpeaking = true;
+            }
+        }
+    }
+
+    private void stopSpeaking() {
+        if (textToSpeech != null && textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
         }
     }
 

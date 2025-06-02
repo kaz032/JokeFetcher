@@ -40,17 +40,40 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.92">
 
-        <TextView
-            android:id="@+id/jokeText"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="198dp"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:padding="24dp"
-            android:text="@string/joke_setup"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp"
-            tools:text="Why did the scarecrow become a motivational speaker?" />
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/jokeText"
+                android:layout_width="match_parent"
+                android:layout_height="198dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/joke_setup"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                tools:text="Why did the scarecrow become a motivational speaker?"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ImageView
+                android:id="@+id/volumeIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/volume_icon_background"
+                android:src="@drawable/ic_volume"
+                android:contentDescription="Toggle speech"
+                android:padding="15dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
@@ -105,21 +128,6 @@
             app:backgroundTint="@color/primary"
             app:cornerRadius="12dp"
             app:rippleColor="@color/primary_variant" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/ttsButton"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:text="Speak Joke"
-            android:maxLines="1"
-            app:backgroundTint="@color/primary"
-            app:cornerRadius="12dp"
-            app:rippleColor="@color/primary_variant"
-            app:layout_constraintTop_toBottomOf="@id/buttonContainer"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
 
     </LinearLayout>
 
